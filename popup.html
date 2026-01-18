@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Subtitle Streamer Settings</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 350px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-size: 14px;
+      color: #333;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #1a1a1a;
+    }
+
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .status.connected {
+      background: #e6f4ea;
+      color: #1e8e3e;
+    }
+
+    .status.connected .status-dot {
+      background: #34a853;
+    }
+
+    .status.disconnected {
+      background: #fce8e6;
+      color: #c5221f;
+    }
+
+    .status.disconnected .status-dot {
+      background: #ea4335;
+    }
+
+    .status.connecting {
+      background: #fef7e0;
+      color: #e37400;
+    }
+
+    .status.connecting .status-dot {
+      background: #fbbc04;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      font-size: 13px;
+      color: #555;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    select:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #4285f4;
+    }
+
+    .toggle-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.3s;
+      border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    .toggle input:checked + .toggle-slider {
+      background-color: #4285f4;
+    }
+
+    .toggle input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #3367d6;
+    }
+
+    button:active {
+      background: #2851a3;
+    }
+
+    button.secondary {
+      background: #f1f3f4;
+      color: #5f6368;
+    }
+
+    button.secondary:hover {
+      background: #e8eaed;
+    }
+
+    .transport-config {
+      display: none;
+    }
+
+    .transport-config.active {
+      display: block;
+    }
+
+    .help-text {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .buttons button {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Subtitle Streamer</h1>
+
+  <div class="section">
+    <div id="status" class="status disconnected">
+      <div class="status-dot"></div>
+      <span id="status-text">Disconnected</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="form-group">
+      <div class="toggle-group">
+        <label for="enabled">Enable Streaming</label>
+        <label class="toggle">
+          <input type="checkbox" id="enabled" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="transportType">Transport Type</label>
+      <select id="transportType">
+        <option value="websocket">WebSocket (Real-time)</option>
+        <option value="http">HTTP POST (Simple)</option>
+        <option value="native">Native Messaging (OS App)</option>
+      </select>
+    </div>
+
+    <div id="config-websocket" class="transport-config active">
+      <div class="form-group">
+        <label for="wsUrl">WebSocket URL</label>
+        <input type="text" id="wsUrl" value="ws://localhost:8765" placeholder="ws://localhost:8765">
+        <div class="help-text">Server must be running and accepting connections</div>
+      </div>
+    </div>
+
+    <div id="config-http" class="transport-config">
+      <div class="form-group">
+        <label for="httpUrl">HTTP Endpoint URL</label>
+        <input type="text" id="httpUrl" value="http://localhost:8080/subtitle" placeholder="http://localhost:8080/subtitle">
+        <div class="help-text">POST requests will be sent to this endpoint</div>
+      </div>
+    </div>
+
+    <div id="config-native" class="transport-config">
+      <div class="form-group">
+        <label for="nativeHost">Native Host Name</label>
+        <input type="text" id="nativeHost" value="com.subtitle.streamer" placeholder="com.subtitle.streamer">
+        <div class="help-text">Must be configured in native messaging manifest</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="buttons">
+      <button id="testBtn" class="secondary">Test Connection</button>
+      <button id="saveBtn">Save Settings</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
