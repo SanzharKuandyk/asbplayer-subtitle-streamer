@@ -11,7 +11,7 @@ A lightweight Chrome extension that intercepts [asbplayer](https://github.com/ki
 - **Multi-transport**: Choose WebSocket, HTTP POST, or Native Messaging
 - **Simple setup**: No complex configuration required
 - **Video context**: Includes timing, URL, and playback state with each subtitle
-- **Auto-reconnect**: WebSocket transport automatically reconnects on disconnect
+- **Smart reconnect**: WebSocket transport auto-reconnects up to 3 times (prevents infinite loops)
 - **Visual status**: Extension badge shows connection status (green/red/yellow)
 
 ## Quick Start
@@ -379,7 +379,8 @@ The extension badge shows connection status:
 - Ensure WebSocket server is running
 - Check URL format: `ws://localhost:8766` (not `http://`)
 - Look for connection errors in server logs
-- Extension will auto-reconnect (check badge for yellow dot)
+- Extension will auto-reconnect up to 3 times (check badge for yellow dot)
+- If reconnection fails 3 times, click "Test Connection" in settings to retry
 
 **HTTP**:
 - Ensure HTTP server is running and accepting POST requests

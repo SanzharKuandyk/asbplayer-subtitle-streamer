@@ -133,9 +133,20 @@ function handleSubtitle(message) {
 
 // Test connection
 async function testConnection() {
+  // Reset reconnect attempts when user manually tests
+  if (transport && transport.reconnectAttempts !== undefined) {
+    console.log('[SubtitleStreamer] Resetting reconnection attempts (manual test)');
+    transport.reconnectAttempts = 0;
+  }
+
   if (!transport) {
     connectTransport();
     // Wait a bit for connection
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  } else {
+    // Reconnect existing transport
+    disconnectTransport();
+    connectTransport();
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
@@ -173,6 +184,7 @@ class WebSocketTransport {
     this.url = url;
     this.ws = null;
     this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 3;  // Stop after 3 failed attempts
     this.maxReconnectDelay = 30000;
     this.heartbeatInterval = null;
     this.reconnectTimeout = null;
@@ -253,12 +265,20 @@ class WebSocketTransport {
       return; // Already scheduled
     }
 
+    // Check if we've exceeded max attempts
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.log(`[SubtitleStreamer] Max reconnection attempts (${this.maxReconnectAttempts}) reached. Stopped trying.`);
+      console.log('[SubtitleStreamer] Click "Test Connection" in settings to retry.');
+      updateBadge('disconnected');
+      return;
+    }
+
     const delay = Math.min(
       1000 * Math.pow(2, this.reconnectAttempts),
       this.maxReconnectDelay
     );
 
-    console.log(`[SubtitleStreamer] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1})`);
+    console.log(`[SubtitleStreamer] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
 
     this.reconnectTimeout = setTimeout(() => {
       this.reconnectTimeout = null;
