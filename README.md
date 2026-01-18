@@ -2,6 +2,8 @@
 
 A lightweight Chrome extension that intercepts [asbplayer](https://github.com/killergerbah/asbplayer) subtitle events and streams them in real-time to your OS for language learning, sentence mining, and custom workflows.
 
+> **Note**: This extension was written by Claude (Anthropic) and examined by a human. If you encounter issues, please report them in the [Issues](https://github.com/SanzharKuandyk/asbplayer-subtitle-streamer/issues) section.
+
 ## Features
 
 - **Non-invasive**: Works alongside asbplayer without modifications
@@ -43,6 +45,8 @@ The extension supports three ways to receive subtitle data:
 - **Pros**: Direct IPC with native apps, no network stack
 - **Cons**: Requires native host manifest configuration
 
+**Port Selection Note**: The default WebSocket port is `8766` (not `8765`) to **avoid conflicts with AnkiConnect**, which uses port `8765` by default. If you're using asbplayer with AnkiConnect, this prevents port conflicts. You can change the port in extension settings if needed.
+
 ### 3. Set Up a Receiver
 
 Choose one of the receiver examples below, or build your own using the JSON message format.
@@ -51,14 +55,18 @@ Choose one of the receiver examples below, or build your own using the JSON mess
 
 ### WebSocket Server (Python)
 
-Simple WebSocket server for testing:
+Simple WebSocket server for testing.
+
+**Requirements**:
+- Python 3.7+ (tested with Python 3.13)
+- `websockets` library: `pip install websockets`
 
 ```python
 import asyncio
 import websockets
 import json
 
-async def handle_client(websocket, path):
+async def handle_client(websocket):
     print("Client connected")
     try:
         async for message in websocket:
@@ -77,15 +85,15 @@ async def handle_client(websocket, path):
         print("Client disconnected")
 
 async def main():
-    server = await websockets.serve(handle_client, "localhost", 8765)
-    print("WebSocket server listening on ws://localhost:8765")
+    server = await websockets.serve(handle_client, "localhost", 8766)
+    print("WebSocket server listening on ws://localhost:8766")
     await server.wait_closed()
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-**Install**: `pip install websockets`
+**Install**: `pip install websockets` (Python 3.7+)
 **Run**: `python websocket_server.py`
 
 ### WebSocket Server (Rust)
@@ -123,8 +131,8 @@ struct VideoContext {
 
 #[tokio::main]
 async fn main() {
-    let listener = TcpListener::bind("127.0.0.1:8765").await.unwrap();
-    println!("WebSocket listening on ws://127.0.0.1:8765");
+    let listener = TcpListener::bind("127.0.0.1:8766").await.unwrap();
+    println!("WebSocket listening on ws://127.0.0.1:8766");
 
     while let Ok((stream, _)) = listener.accept().await {
         tokio::spawn(async move {
@@ -334,7 +342,7 @@ All receivers get JSON messages in this format:
 
 1. Click the extension icon in Chrome toolbar
 2. Configure your transport settings:
-   - **WebSocket**: Enter WebSocket server URL (default: `ws://localhost:8765`)
+   - **WebSocket**: Enter WebSocket server URL (default: `ws://localhost:8766`)
    - **HTTP**: Enter HTTP endpoint URL (default: `http://localhost:8080/subtitle`)
    - **Native**: Enter native host name (default: `com.subtitle.streamer`)
 3. Click "Save Settings"
@@ -369,7 +377,7 @@ The extension badge shows connection status:
 
 **WebSocket**:
 - Ensure WebSocket server is running
-- Check URL format: `ws://localhost:8765` (not `http://`)
+- Check URL format: `ws://localhost:8766` (not `http://`)
 - Look for connection errors in server logs
 - Extension will auto-reconnect (check badge for yellow dot)
 
@@ -496,7 +504,9 @@ MIT License - feel free to use, modify, and distribute.
 
 ## Credits
 
-Built to complement [asbplayer](https://github.com/killergerbah/asbplayer) by killergerbah.
+- Built to complement [asbplayer](https://github.com/killergerbah/asbplayer) by killergerbah
+- Written by Claude (Anthropic) and examined by a human
+- Contributions and feedback welcome!
 
 ## Contributing
 

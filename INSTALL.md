@@ -16,13 +16,15 @@
 2. Settings popup should open
 3. Note the default configuration:
    - Transport Type: WebSocket
-   - URL: `ws://localhost:8765`
+   - URL: `ws://localhost:8766`
 
 ## 2. Set Up a Test Receiver (2 minutes)
 
 Choose the quickest option for your environment:
 
 ### Option A: Python WebSocket Server (Easiest)
+
+**Requirements**: Python 3.7+ (tested with Python 3.13)
 
 **Install dependencies**:
 ```bash
@@ -35,7 +37,7 @@ import asyncio
 import websockets
 import json
 
-async def handle_client(websocket, path):
+async def handle_client(websocket):
     print("✓ Extension connected!")
     try:
         async for message in websocket:
@@ -46,8 +48,8 @@ async def handle_client(websocket, path):
         print("✗ Extension disconnected")
 
 async def main():
-    server = await websockets.serve(handle_client, "localhost", 8765)
-    print("🚀 Receiver listening on ws://localhost:8765")
+    server = await websockets.serve(handle_client, "localhost", 8766)
+    print("🚀 Receiver listening on ws://localhost:8766")
     print("👉 Open a video with asbplayer to see subtitles...")
     await server.wait_closed()
 
@@ -69,7 +71,7 @@ npm install ws
 **Create `test_receiver.js`**:
 ```javascript
 const WebSocket = require('ws');
-const wss = new WebSocket.Server({ port: 8765 });
+const wss = new WebSocket.Server({ port: 8766 });
 
 wss.on('connection', (ws) => {
   console.log('✓ Extension connected!');
@@ -86,7 +88,7 @@ wss.on('connection', (ws) => {
   });
 });
 
-console.log('🚀 Receiver listening on ws://localhost:8765');
+console.log('🚀 Receiver listening on ws://localhost:8766');
 console.log('👉 Open a video with asbplayer to see subtitles...');
 ```
 
@@ -115,7 +117,7 @@ node test_receiver.js
 
 ### Extension shows "Disconnected" (Red)
 - **Receiver not running**: Start your Python/Node.js script
-- **Wrong port**: Make sure receiver is on port `8765`
+- **Wrong port**: Make sure receiver is on port `8766`
 - **Firewall**: Allow localhost connections
 
 ### No subtitles appearing

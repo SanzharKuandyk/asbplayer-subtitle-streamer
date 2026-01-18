@@ -5,6 +5,10 @@ asbplayer Subtitle Streamer - Example WebSocket Receiver
 This is a simple receiver that prints subtitles to the console in real-time.
 Perfect for testing and as a starting point for custom integrations.
 
+Requirements:
+    - Python 3.7+ (tested with Python 3.13)
+    - websockets library: pip install websockets
+
 Usage:
     1. Install dependencies: pip install websockets
     2. Run: python example_receiver.py
@@ -13,6 +17,8 @@ Usage:
     5. Watch subtitles appear in this console!
 
 For more examples (Rust, HTTP, Native Messaging, Neovim), see README.md
+
+Note: Written by Claude (Anthropic) and examined by a human.
 """
 
 import asyncio
@@ -21,7 +27,7 @@ import json
 from datetime import datetime
 
 
-async def handle_client(websocket, path):
+async def handle_client(websocket):
     """Handle incoming WebSocket connection from extension"""
     client_addr = websocket.remote_address
     print(f"\n{'='*60}")
@@ -106,7 +112,7 @@ def format_timestamp(timestamp):
 async def main():
     """Start WebSocket server"""
     host = "localhost"
-    port = 8765
+    port = 8766  # Changed from 8765 to avoid conflict with AnkiConnect
 
     print(f"\n{'='*60}")
     print(f"  asbplayer Subtitle Streamer - Example Receiver")

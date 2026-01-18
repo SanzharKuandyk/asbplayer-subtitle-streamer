@@ -20,7 +20,7 @@ const configNative = document.getElementById('config-native');
 let settings = {
   enabled: true,
   transportType: 'websocket',
-  wsUrl: 'ws://localhost:8765',
+  wsUrl: 'ws://localhost:8766',  // Port 8766 to avoid conflict with AnkiConnect (8765)
   httpUrl: 'http://localhost:8080/subtitle',
   nativeHost: 'com.subtitle.streamer'
 };
