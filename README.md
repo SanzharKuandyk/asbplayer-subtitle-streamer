@@ -8,11 +8,13 @@ A lightweight Chrome extension that intercepts [asbplayer](https://github.com/ki
 
 - **Non-invasive**: Works alongside asbplayer without modifications
 - **Real-time streaming**: Subtitle text appears instantly as it's displayed
+- **Multi-track support**: Handles multiple subtitle tracks with individual track numbers (perfect for dual-language learning)
 - **Multi-transport**: Choose WebSocket, HTTP POST, or Native Messaging
 - **Simple setup**: No complex configuration required
 - **Video context**: Includes timing, URL, and playback state with each subtitle
 - **Smart reconnect**: WebSocket transport auto-reconnects up to 3 times (prevents infinite loops)
 - **Visual status**: Extension badge shows connection status (green/red/yellow)
+- **Backward compatible**: Existing receivers continue to work with combined text field
 
 ## Quick Start
 
@@ -320,11 +322,23 @@ All receivers get JSON messages in this format:
   },
   "subtitle": {
     "text": "Hello, world!",
+    "lines": [
+      {"text": "Hello, world!", "track": 0},
+      {"text": "こんにちは、世界！", "track": 1}
+    ],
     "start": 45234,
     "end": 47234
   }
 }
 ```
+
+**Note about multiple subtitle tracks:**
+- `text`: Combined text of all subtitle lines separated by newline (`\n`) for backward compatibility
+- `lines`: Array of subtitle line objects, each containing:
+  - `text`: The subtitle text for this track
+  - `track`: Track number (0, 1, 2, etc.) - user-configurable in asbplayer
+- Users can configure tracks however they want (different languages, auto-subs, manual subs, etc.)
+- Receivers can filter specific tracks or use all of them
 
 ### Connection Events (WebSocket only)
 ```json
@@ -337,6 +351,65 @@ All receivers get JSON messages in this format:
 - **Method**: POST
 - **Content-Type**: application/json
 - **Body**: Same as subtitle event message
+
+### Working with Multiple Subtitle Tracks
+
+When asbplayer displays multiple subtitle tracks, you can access them individually:
+
+**Python Example:**
+```python
+def handle_subtitle(data):
+    subtitle = data.get('subtitle', {})
+    lines = subtitle.get('lines', [])
+
+    if lines:
+        # Access individual tracks
+        for line in lines:
+            track = line.get('track', 0)
+            text = line.get('text', '')
+            print(f"Track {track}: {text}")
+
+        # Filter only track 0
+        track_0 = [l for l in lines if l.get('track') == 0]
+        if track_0:
+            print(f"Track 0: {track_0[0].get('text')}")
+
+        # Filter only track 1
+        track_1 = [l for l in lines if l.get('track') == 1]
+        if track_1:
+            print(f"Track 1: {track_1[0].get('text')}")
+    else:
+        # Fallback for backward compatibility
+        text = subtitle.get('text', '')
+        print(f"Subtitle: {text}")
+```
+
+**JavaScript Example:**
+```javascript
+function handleSubtitle(data) {
+    const { subtitle } = data;
+    const { lines } = subtitle;
+
+    if (lines && lines.length > 0) {
+        // Get only track 1
+        const track1 = lines.find(l => l.track === 1);
+        if (track1) {
+            console.log(`Track 1: ${track1.text}`);
+        }
+
+        // Get only track 0
+        const track0 = lines.find(l => l.track === 0);
+        if (track0) {
+            console.log(`Track 0: ${track0.text}`);
+        }
+
+        // Or process all tracks
+        lines.forEach(line => {
+            console.log(`Track ${line.track}: ${line.text}`);
+        });
+    }
+}
+```
 
 ## Configuration
 

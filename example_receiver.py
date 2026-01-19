@@ -83,6 +83,7 @@ def handle_subtitle(data):
     video = data.get('video', {})
 
     text = subtitle.get('text', '')
+    lines = subtitle.get('lines', [])  # Array of {text, track} objects
     current_time = video.get('currentTime', 0)
     video_url = video.get('url', 'unknown')
 
@@ -92,13 +93,34 @@ def handle_subtitle(data):
     time_str = f"{minutes:02d}:{seconds:02d}"
 
     # Print subtitle with timestamp
-    print(f"[{time_str}] {text}")
+    if lines:
+        # New format: show each track separately
+        print(f"[{time_str}] {len(lines)} subtitle track(s):")
+        for line in lines:
+            track_num = line.get('track', 0)
+            line_text = line.get('text', '')
+            print(f"  Track {track_num}: {line_text}")
+    else:
+        # Fallback to old format (backward compatibility)
+        print(f"[{time_str}] {text}")
 
     # Uncomment for detailed information:
     # print(f"    Video: {video_url}")
     # print(f"    Duration: {video.get('duration', 0):.1f}s")
     # print(f"    Paused: {video.get('paused', False)}")
     # print()
+
+    # Example: Filter only track 0
+    # if lines:
+    #     track_0 = [l for l in lines if l.get('track') == 0]
+    #     if track_0:
+    #         print(f"  Track 0 only: {track_0[0].get('text')}")
+
+    # Example: Filter only track 1
+    # if lines:
+    #     track_1 = [l for l in lines if l.get('track') == 1]
+    #     if track_1:
+    #         print(f"  Track 1 only: {track_1[0].get('text')}")
 
 
 def format_timestamp(timestamp):

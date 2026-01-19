@@ -148,8 +148,15 @@
     const container = mutations[0].target.closest(SUBTITLE_SELECTORS.join(','));
     if (!container) return;
 
-    // Extract text
-    const text = container.textContent.trim();
+    // Extract individual subtitle lines with track numbers
+    const spans = container.querySelectorAll('span[data-track]');
+    const lines = Array.from(spans).map(span => ({
+      text: span.textContent.trim(),
+      track: parseInt(span.dataset.track || '0', 10)
+    }));
+
+    // Combine all lines for comparison (backward compatibility)
+    const text = lines.map(l => l.text).join('\n');
 
     // Debounce and check if changed
     const now = Date.now();
@@ -166,7 +173,8 @@
     // Send to background script
     if (text) {
       console.log('[SubtitleStreamer] Subtitle:', text);
-      sendSubtitle(text, videoContext);
+      console.log('[SubtitleStreamer] Lines:', lines);
+      sendSubtitle(text, lines, videoContext);
     }
   }
 
@@ -194,13 +202,14 @@
   }
 
   // Send subtitle to background script
-  function sendSubtitle(text, videoContext) {
+  function sendSubtitle(text, lines, videoContext) {
     const message = {
       type: 'subtitle',
       timestamp: Date.now(),
       video: videoContext,
       subtitle: {
-        text: text,
+        text: text, // Combined text for backward compatibility
+        lines: lines, // Array of {text, track} objects
         start: Math.floor(videoContext.currentTime * 1000),
         end: Math.floor(videoContext.currentTime * 1000) + 2000 // Estimate 2s duration
       }
