@@ -41,8 +41,9 @@ You should see:
 
 1. Open a video site (Netflix, YouTube, etc.)
 2. Activate asbplayer and load subtitles
-3. Play the video
-4. Subtitles stream to your receiver in real-time
+3. **Enable subtitle display on the video** (required - the extension monitors subtitle DOM elements)
+4. Play the video
+5. Subtitles stream to your receiver in real-time
 
 ## Message Format
 
@@ -140,6 +141,11 @@ asbplayer-subtitle-streamer/
 ├── example_receiver.py    # Example WebSocket receiver
 └── EXAMPLES.md           # Detailed examples
 ```
+
+**How it works:**
+- Monitors subtitle DOM containers (`.asbplayer-subtitles-container-bottom/top`)
+- Extracts text and track numbers from `span[data-track]` elements
+- Streams to receivers via WebSocket, HTTP, or Native Messaging
 
 **Debugging:**
 - Content script: Right-click page → Inspect → Console
