@@ -134,7 +134,7 @@ def format_timestamp(timestamp):
 async def main():
     """Start WebSocket server"""
     host = "localhost"
-    port = 8766  # Changed from 8765 to avoid conflict with AnkiConnect
+    port = 8767  # Changed from 8765 to avoid conflict with AnkiConnect
 
     print(f"\n{'='*60}")
     print(f"  asbplayer Subtitle Streamer - Example Receiver")

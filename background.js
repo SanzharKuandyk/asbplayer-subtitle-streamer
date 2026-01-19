@@ -7,7 +7,7 @@ const VERSION = '1.0.0';
 let settings = {
   enabled: true,
   transportType: 'websocket', // 'websocket', 'http', 'native'
-  wsUrl: 'ws://localhost:8766',  // Port 8766 to avoid conflict with AnkiConnect (8765)
+  wsUrl: 'ws://localhost:8767',  // Port 8767 to avoid conflict with AnkiConnect (8765)
   httpUrl: 'http://localhost:8080/subtitle',
   nativeHost: 'com.subtitle.streamer'
 };

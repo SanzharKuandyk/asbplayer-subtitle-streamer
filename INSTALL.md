@@ -16,7 +16,7 @@
 2. Settings popup should open
 3. Note the default configuration:
    - Transport Type: WebSocket
-   - URL: `ws://localhost:8766`
+   - URL: `ws://localhost:8767`
 
 ## 2. Set Up a Test Receiver (2 minutes)
 
@@ -48,8 +48,8 @@ async def handle_client(websocket):
         print("✗ Extension disconnected")
 
 async def main():
-    server = await websockets.serve(handle_client, "localhost", 8766)
-    print("🚀 Receiver listening on ws://localhost:8766")
+    server = await websockets.serve(handle_client, "localhost", 8767)
+    print("🚀 Receiver listening on ws://localhost:8767")
     print("👉 Open a video with asbplayer to see subtitles...")
     await server.wait_closed()
 
@@ -71,7 +71,7 @@ npm install ws
 **Create `test_receiver.js`**:
 ```javascript
 const WebSocket = require('ws');
-const wss = new WebSocket.Server({ port: 8766 });
+const wss = new WebSocket.Server({ port: 8767 });
 
 wss.on('connection', (ws) => {
   console.log('✓ Extension connected!');
@@ -88,7 +88,7 @@ wss.on('connection', (ws) => {
   });
 });
 
-console.log('🚀 Receiver listening on ws://localhost:8766');
+console.log('🚀 Receiver listening on ws://localhost:8767');
 console.log('👉 Open a video with asbplayer to see subtitles...');
 ```
 
@@ -117,7 +117,7 @@ node test_receiver.js
 
 ### Extension shows "Disconnected" (Red)
 - **Receiver not running**: Start your Python/Node.js script
-- **Wrong port**: Make sure receiver is on port `8766`
+- **Wrong port**: Make sure receiver is on port `8767`
 - **Firewall**: Allow localhost connections
 
 ### No subtitles appearing

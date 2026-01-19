@@ -80,11 +80,11 @@ You should see:
 
 Click the extension icon to configure:
 
-- **WebSocket** (default): `ws://localhost:8766`
+- **WebSocket** (default): `ws://localhost:8767`
 - **HTTP POST**: `http://localhost:8080/subtitle`
 - **Native Messaging**: `com.subtitle.streamer`
 
-Port `8766` is used by default to avoid conflicts with AnkiConnect (port `8765`).
+Port `8767` is used by default to avoid conflicts with AnkiConnect and asbplayer's own command websocket (ports `8765`, `8766`).
 
 ## Transport Options
 

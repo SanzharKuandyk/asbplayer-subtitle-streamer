@@ -43,8 +43,8 @@ async def handle_client(websocket):
         print("Client disconnected")
 
 async def main():
-    server = await websockets.serve(handle_client, "localhost", 8766)
-    print("WebSocket server listening on ws://localhost:8766")
+    server = await websockets.serve(handle_client, "localhost", 8767)
+    print("WebSocket server listening on ws://localhost:8767")
     await server.wait_closed()
 
 if __name__ == "__main__":
@@ -89,8 +89,8 @@ struct VideoContext {
 
 #[tokio::main]
 async fn main() {
-    let listener = TcpListener::bind("127.0.0.1:8766").await.unwrap();
-    println!("WebSocket listening on ws://127.0.0.1:8766");
+    let listener = TcpListener::bind("127.0.0.1:8767").await.unwrap();
+    println!("WebSocket listening on ws://127.0.0.1:8767");
 
     while let Ok((stream, _)) = listener.accept().await {
         tokio::spawn(async move {
