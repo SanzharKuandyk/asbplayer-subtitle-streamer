@@ -1,167 +1,66 @@
 # asbplayer Subtitle Streamer
 
-Stream subtitles from [asbplayer](https://github.com/killergerbah/asbplayer) to your own applications in real-time.
+Send subtitles shown by asbplayer to another program while you watch a video. The included Python receiver prints them in a terminal.
 
-> **Note**: This extension was written by Claude (Anthropic) and examined by a human. If you encounter issues, please [report them here](https://github.com/SanzharKuandyk/asbplayer-subtitle-streamer/issues).
+## Do you need it?
 
-## Features
+asbplayer already has two useful options:
 
-- Stream subtitles in real-time as they appear
-- Support for multiple subtitle tracks (with track numbers)
-- Multiple transport options: WebSocket, HTTP POST, or Native Messaging
-- Auto-reconnect (WebSocket)
-- Backward compatible message format
+- **Text as it appears:** turn on [Auto-copy current subtitle to clipboard](https://docs.asbplayer.dev/docs/reference/settings/) if your other program reads the clipboard.
+- **A complete loaded subtitle track:** use asbplayer's [`get-subtitles` API](https://docs.asbplayer.dev/docs/reference/external-api/#get-subtitles). It returns cue text and real start/end times. It does **not** report which cue is currently on screen or send an event for each displayed line.
 
-## Quick Start
+This extension sends displayed text to a WebSocket, HTTP, or native receiver without using the clipboard. It reads asbplayer's page elements, so changes to asbplayer's display markup may require an update here.
 
-### 1. Install Extension
+## Try it
 
-1. Clone this repo: `git clone https://github.com/SanzharKuandyk/asbplayer-subtitle-streamer.git`
-2. Open Chrome → `chrome://extensions/`
-3. Enable "Developer mode" (top-right)
-4. Click "Load unpacked" → Select the repo folder
+You need Chrome 116 or newer (or a compatible Chromium browser), the asbplayer extension, and Python with the `websockets` package.
 
-### 2. Start a Receiver
+1. Download this repository.
+2. Open a terminal in its folder and run:
 
-**Python WebSocket (Recommended):**
-```bash
-cd asbplayer-subtitle-streamer
-pip install websockets
-python example_receiver.py
-```
+   ```sh
+   python -m pip install websockets
+   python example_receiver.py
+   ```
 
-You should see:
-```
-✓ Server is ready and waiting for connections...
-```
+   On Windows, use `py` in place of `python` if needed. Leave the receiver running.
 
-**Other languages/frameworks:** See [EXAMPLES.md](EXAMPLES.md)
+3. Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and select this folder.
+4. Open this extension's popup. Use **WebSocket** at `ws://localhost:8767`, click **Save Settings**, then **Try Connecting**. The popup should say **Connected**.
+5. Open a video with asbplayer subtitles, make the subtitles visible on the video, and play. Existing visible text is sent when the page loads; later changes and subtitle clears are sent too.
 
-### 3. Use asbplayer
+The default receiver prints the subtitle text and the video's approximate playback time. It does not write files or create Anki cards.
 
-1. Open a video site (Netflix, YouTube, etc.)
-2. Activate asbplayer and load subtitles
-3. **Enable subtitle display on the video** (required - the extension monitors subtitle DOM elements)
-4. Play the video
-5. Subtitles stream to your receiver in real-time
+## If it does not work
 
-## Message Format
+- **Disconnected:** check that `example_receiver.py` is running and the port matches. Click **Try Connecting**. WebSocket reconnection also retries automatically.
+- **Connected, no text:** verify that asbplayer subtitles appear on the video page. Refresh that page after installing or reloading this extension.
+- **Wrong settings:** change the fields and click **Save Settings**. **Try Connecting** also saves the displayed fields before testing.
+- **HTTP status:** Connected means a POST succeeded. A bad response or timeout shows Disconnected and an error in the popup.
+- **Native Messaging:** you must separately register a native host. The popup confirms connection only after that host replies.
 
-```json
-{
-  "type": "subtitle",
-  "timestamp": 1234567890123,
-  "video": {
-    "currentTime": 45.234,
-    "duration": 3600.0,
-    "paused": false,
-    "url": "https://www.netflix.com/watch/12345"
-  },
-  "subtitle": {
-    "text": "Combined subtitle text\nSecond line",
-    "lines": [
-      {"text": "Combined subtitle text", "track": 0},
-      {"text": "Second line", "track": 1}
-    ],
-    "start": 45234,
-    "end": 47234
-  }
-}
-```
+For details, inspect the video page's console and the extension's service worker in `chrome://extensions`.
 
-**Fields:**
-- `text`: All subtitle lines combined with `\n` (backward compatible)
-- `lines`: Array of individual subtitle lines with track numbers
-- `track`: User-configurable track ID (0, 1, 2, etc.)
+## What a receiver gets
 
-**See [EXAMPLES.md](EXAMPLES.md) for working with multiple tracks.**
+Each change sends a complete snapshot of visible lines in that browser frame. An empty `subtitle.text` means the subtitles cleared. Events include the tab and frame IDs, track numbers, a sequence number, the page URL, and the current video time when a matching video can be found. See [the receiver format](EXAMPLES.md).
 
-## Configuration
+**No start/end cue times are sent.** Video time is only a sample taken when the display changes. If you need accurate cue timing, use asbplayer's `get-subtitles` API.
 
-Click the extension icon to configure:
+WebSocket and Native Messaging confirm that a message was handed to the local connection, not that your program processed it. HTTP awaits a successful response and sends events in order, but a retry after a network failure can duplicate an event. Use `eventId` to deduplicate if that matters. No old event backlog survives a browser shutdown; reconnecting asks the page for its current snapshot.
 
-- **WebSocket** (default): `ws://localhost:8767`
-- **HTTP POST**: `http://localhost:8080/subtitle`
-- **Native Messaging**: `com.subtitle.streamer`
+This extension runs on video pages where asbplayer may be used, including frames. It sends subtitle text and the page/frame URL to the destination you configure. Keep the default local URL unless you intend to send that information elsewhere. Closed shadow roots and display formats without the expected asbplayer containers cannot be read.
 
-Port `8767` is used by default to avoid conflicts with AnkiConnect and asbplayer's own command websocket (ports `8765`, `8766`).
+## Connections
 
-## Transport Options
+| Type | Default | Receiver |
+| --- | --- | --- |
+| WebSocket | `ws://localhost:8767` | [example_receiver.py](example_receiver.py) |
+| HTTP POST | `http://localhost:8080/subtitle` | Your JSON HTTP endpoint |
+| Native Messaging | `com.subtitle.streamer` | A registered native host |
 
-### WebSocket (Recommended)
-- Best for: Real-time streaming, continuous connection
-- Pros: Low latency, bidirectional, persistent
-- Cons: Requires WebSocket server
+Only one type runs at a time. Port 8767 is for this project; asbplayer's own server normally uses 8766 and AnkiConnect normally uses 8765.
 
-### HTTP POST
-- Best for: Simple logging, stateless processing
-- Pros: Works with any HTTP server, no persistent connection
-- Cons: Higher overhead per subtitle
+Run `node --test tests/extension.test.cjs` for the automated checks. Browser and asbplayer compatibility still need a real video-page check after upstream updates.
 
-### Native Messaging
-- Best for: Deep OS integration, desktop apps
-- Pros: Direct IPC with native apps
-- Cons: Requires native host manifest configuration
-
-## Examples & Use Cases
-
-See [EXAMPLES.md](EXAMPLES.md) for:
-- Python/Rust/JavaScript receiver examples
-- Neovim integration
-- Native messaging setup
-- Multi-track subtitle handling
-- Use case ideas (language learning, sentence mining, etc.)
-
-## Troubleshooting
-
-**Subtitles not appearing:**
-- Check that asbplayer is installed and active
-- Verify subtitles are loaded in asbplayer
-- Check browser console (F12) for `[SubtitleStreamer]` logs
-
-**Connection failed:**
-- Make sure your receiver is running (`python example_receiver.py`)
-- Check the URL/port matches your receiver
-- For WebSocket: URL must start with `ws://` or `wss://`
-- For HTTP: URL must start with `http://` or `https://`
-
-**Extension badge:**
-- Green (●): Connected and streaming
-- Red (○): Disconnected
-- Yellow (◌): Connecting...
-
-## Development
-
-```
-asbplayer-subtitle-streamer/
-├── manifest.json          # Extension config
-├── background.js          # Transport manager
-├── content.js             # Subtitle observer
-├── popup.html/popup.js    # Settings UI
-├── example_receiver.py    # Example WebSocket receiver
-└── EXAMPLES.md           # Detailed examples
-```
-
-**How it works:**
-- Monitors subtitle DOM containers (`.asbplayer-subtitles-container-bottom/top`)
-- Extracts text and track numbers from `span[data-track]` elements
-- Streams to receivers via WebSocket, HTTP, or Native Messaging
-
-**Debugging:**
-- Content script: Right-click page → Inspect → Console
-- Background script: `chrome://extensions/` → "Inspect views: service worker"
-- Popup: Right-click extension icon → Inspect popup
-
-## License
-
-MIT License - feel free to use, modify, and distribute.
-
-## Credits
-
-- Built for [asbplayer](https://github.com/killergerbah/asbplayer) by killergerbah
-- Written by Claude (Anthropic) and examined by a human
-- Contributions welcome!
-
----
-
-**Happy subtitle streaming!** 📺
+MIT license. Built for [asbplayer](https://github.com/asbplayer/asbplayer).

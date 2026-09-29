@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
   "name": "asbplayer Subtitle Streamer",
-  "version": "1.0.0",
-  "description": "Stream asbplayer subtitles to your OS in real-time for language learning and sentence mining",
+  "version": "1.1.0",
+  "minimum_chrome_version": "116",
+  "description": "Send visible asbplayer subtitle text to a receiver",
 
   "permissions": [
-    "activeTab",
     "storage",
+    "alarms",
     "nativeMessaging"
   ],
 
@@ -28,17 +29,6 @@
   ],
 
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.svg",
-      "48": "icons/icon48.svg",
-      "128": "icons/icon128.svg"
-    }
-  },
-
-  "icons": {
-    "16": "icons/icon16.svg",
-    "48": "icons/icon48.svg",
-    "128": "icons/icon128.svg"
+    "default_popup": "popup.html"
   }
 }
